@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0b1220">
+<title>Ular Tangga Akhlak</title>
+<style>
+:root{
+  --bg:#0b1220;--panel:#16233a;--panel2:#1f2f4a;--ink:#e2e8f0;--mut:#94a3b8;
+  --gold:#fbbf24;--green:#22c55e;--red:#ef4444;--blue:#3b82f6;--pur:#a855f7;
+  --safe: env(safe-area-inset-bottom, 0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;height:100%;overflow:hidden;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  background:var(--bg);color:var(--ink);font-size:15px}
+#app{display:flex;flex-direction:column;height:100vh;height:100dvh}
+
+/* SCREEN */
+.screen{display:none;flex-direction:column;height:100%;overflow-y:auto;padding:20px}
+.screen.active{display:flex}
+.center{justify-content:center;align-items:center;text-align:center}
+
+/* LANDING */
+.logo{font-size:52px;margin-bottom:12px}
+.title{font-size:26px;font-weight:800;color:var(--gold);margin:0 0 4px}
+.subtitle{color:var(--mut);font-size:14px;margin:0 0 28px;line-height:1.5;max-width:340px}
+
+/* BUTTONS */
+.btn{display:block;width:100%;max-width:380px;padding:15px 18px;margin:8px auto;
+  border:none;border-radius:14px;font-size:15px;font-weight:700;
+  background:var(--gold);color:#111;cursor:pointer;transition:transform .08s}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn.secondary{background:var(--panel2);color:var(--ink);border:1px solid #334155}
+.btn.danger{background:var(--red);color:#fff}
+.btn.small{padding:10px 14px;font-size:13px;width:auto;max-width:none;display:inline-block;margin:0 4px}
+.btn-row{display:flex;gap:8px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+
+/* INPUTS */
+.input{width:100%;max-width:380px;display:block;margin:8px auto;padding:14px 16px;
+  border-radius:12px;border:1px solid #334155;background:var(--panel);
+  color:var(--ink);font-size:15px;font-family:inherit}
+.input:focus{outline:none;border-color:var(--gold)}
+.label{display:block;margin:18px auto 6px;max-width:380px;
+  font-size:12px;color:var(--mut);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+
+/* HEADER GAME */
+.ghead{display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px;background:var(--panel);border-bottom:1px solid #334155;gap:8px}
+.ghead .who{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ghead .actions{display:flex;gap:6px}
+.icon-btn{background:transparent;border:1px solid #334155;color:var(--ink);
+  width:34px;height:34px;border-radius:10px;cursor:pointer;font-size:16px;
+  display:flex;align-items:center;justify-content:center;padding:0}
+
+/* BOARD */
+.board-wrap{padding:8px;flex:1;overflow:hidden;display:flex;align-items:center;justify-content:center}
+#board{display:grid;grid-template-columns:repeat(8,1fr);gap:3px;
+  width:100%;max-width:min(100%, calc(100dvh - 260px) * 1.6);aspect-ratio:8/5}
+.cell{position:relative;aspect-ratio:1;border-radius:6px;background:var(--panel);
+  border:1px solid #24324a;padding:2px;font-size:8px;line-height:1.05;
+  overflow:hidden;display:flex;flex-direction:column;justify-content:space-between}
+.cell .num{font-size:8px;opacity:.45;font-weight:600}
+.cell .nm{font-size:6.5px;opacity:.85;line-height:1.05;overflow:hidden;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.cell.TANGGA{background:#14532d;border-color:var(--green)}
+.cell.ULAR{background:#4c1d24;border-color:var(--red)}
+.cell.MASJID{background:#1e3a5f;border-color:var(--blue)}
+.cell.SEDEKAH{background:#3b2f10;border-color:#eab308}
+.cell.JEBAKAN{background:#3f1d1d;border-color:#f97316}
+.cell.SABAR{background:#1f2937;border-color:#94a3b8}
+.cell.TAUBAT{background:#2a1f4a;border-color:#8b5cf6}
+.cell.CABANG{background:#3b0764;border-color:var(--pur)}
+.cell.FINISH{background:#713f12;border-color:var(--gold)}
+.cell.highlight{box-shadow:0 0 0 2px var(--gold), 0 0 12px var(--gold);z-index:1}
+.tokens{position:absolute;bottom:1px;right:1px;display:flex;flex-wrap:wrap-reverse;
+  justify-content:flex-end;gap:1px;max-width:calc(100% - 4px)}
+.tok{width:8px;height:8px;border-radius:50%;border:1px solid #000;flex-shrink:0}
+
+/* PLAYER BAR */
+.players{display:flex;gap:6px;padding:8px 10px;overflow-x:auto;background:var(--panel);
+  border-top:1px solid #334155;scrollbar-width:none}
+.players::-webkit-scrollbar{display:none}
+.pcard{flex-shrink:0;background:var(--panel2);border-radius:10px;padding:6px 10px;
+  font-size:11px;border:2px solid transparent;min-width:100px}
+.pcard.active{border-color:var(--gold);background:#2a2a1a}
+.pcard.me{border-color:var(--blue)}
+.pcard .nm{font-weight:700;font-size:12px;margin-bottom:2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px}
+.pcard .stats{display:flex;gap:6px;font-size:10px;opacity:.85}
+.pcard .st{display:flex;gap:2px}
+
+/* ACTION BAR */
+.actionbar{padding:8px 10px calc(8px + var(--safe));background:var(--panel);
+  border-top:1px solid #334155;display:flex;gap:8px;align-items:center}
+.actionbar .main-btn{flex:1}
+.actionbar .info{flex-shrink:0;font-size:11px;color:var(--mut);text-align:right;
+  max-width:140px;line-height:1.3}
+.turn-label{font-size:12px;opacity:.7}
+
+/* MODAL */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;
+  align-items:center;justify-content:center;padding:16px;z-index:100;
+  animation:fade .15s}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.modal.hidden{display:none}
+.modal-card{background:var(--panel);border:2px solid var(--gold);border-radius:16px;
+  max-width:520px;width:100%;max-height:90vh;overflow-y:auto;padding:22px;
+  animation:pop .2s}
+@keyframes pop{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}
+.modal-card h2{margin:0 0 8px;font-size:19px;color:var(--gold);line-height:1.3}
+.modal-card p{margin:0 0 14px;font-size:14.5px;line-height:1.55}
+.modal-card .hint{font-size:12px;opacity:.7;margin:6px 0 14px;font-style:italic}
+.opt{display:block;width:100%;text-align:left;background:var(--panel2);
+  color:var(--ink);border:1px solid #3a4d6e;border-radius:11px;
+  padding:13px 15px;margin-bottom:8px;font-size:14px;font-family:inherit;
+  font-weight:500;cursor:pointer;line-height:1.4;transition:all .1s}
+.opt:active{transform:scale(.98)}
+.opt:hover{background:#3a4d6e}
+.opt .eff{display:block;font-size:11px;opacity:.7;margin-top:4px}
+.note{font-size:12px;opacity:.65;margin-top:14px;font-style:italic;line-height:1.5}
+
+/* TOAST */
+#toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);
+  background:#000c;color:#fff;padding:10px 18px;border-radius:10px;font-size:13px;
+  z-index:200;pointer-events:none;opacity:0;transition:opacity .3s;max-width:90%}
+#toast.show{opacity:1}
+
+/* LOG */
+.log-view{flex:1;overflow-y:auto;padding:12px;font-size:12.5px;line-height:1.6}
+.log-item{padding:6px 8px;border-bottom:1px solid #24324a}
+.log-item:last-child{border-bottom:none}
+
+/* ROOM */
+.room-code{font-family:ui-monospace,monospace;font-size:32px;font-weight:800;
+  color:var(--gold);letter-spacing:6px;text-align:center;padding:18px;
+  background:var(--panel2);border-radius:14px;margin:16px 0}
+.hint-box{background:var(--panel);border-radius:12px;padding:14px;
+  font-size:13px;line-height:1.6;color:var(--mut);max-width:400px;margin:12px auto}
+.hint-box b{color:var(--ink)}
+
+/* SPLASH */
+.spinner{width:32px;height:32px;border:3px solid var(--panel2);border-top-color:var(--gold);
+  border-radius:50%;animation:spin .8s linear infinite;margin:20px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* MOBILE */
+@media(max-width:400px){
+  .title{font-size:22px}
+  .btn{padding:13px 16px;font-size:14px}
+  .pcard{min-width:88px;font-size:10px;padding:5px 8px}
+  .pcard .nm{font-size:11px;max-width:110px}
+  .cell .nm{font-size:5.5px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- LANDING -->
+  <div id="screen-landing" class="screen center active">
+    <div class="logo">🕌</div>
+    <h1 class="title">Ular Tangga Akhlak</h1>
+    <p class="subtitle">Perjalanan dari lahir menuju husnul khatimah.<br>
+       Tidak ada jawaban salah — hanya pilihan dan konsekuensinya.</p>
+    <button class="btn" id="btn-local">🎲 Main di HP Ini (2–4 anak)</button>
+    <button class="btn secondary" id="btn-online">🌐 Main Online (beda HP)</button>
+    <button class="btn secondary" id="btn-rules">📖 Aturan</button>
+    <div style="font-size:11px;opacity:.5;margin-top:30px">v1.0 · PAI</div>
+  </div>
+
+  <!-- SETUP LOCAL -->
+  <div id="screen-setup" class="screen">
+    <h1 class="title" style="text-align:center">Siapa yang main?</h1>
+    <p class="subtitle" style="text-align:center;margin:0 auto 20px">Isi nama 2 sampai 4 pemain.</p>
+    <div id="name-inputs"></div>
+    <button class="btn secondary" id="btn-add-player">+ Tambah pemain</button>
+    <button class="btn" id="btn-start-local" style="margin-top:20px">Mulai Bermain 🎲</button>
+    <div class="btn-row"><button class="btn secondary small" id="btn-back-setup">← Kembali</button></div>
+  </div>
+
+  <!-- ONLINE HOST / JOIN -->
+  <div id="screen-online" class="screen">
+    <h1 class="title" style="text-align:center">Main Online</h1>
+    <div class="btn-row" style="margin-bottom:24px">
+      <button class="btn small" id="tab-host">Buat Room</button>
+      <button class="btn secondary small" id="tab-join">Gabung Room</button>
+    </div>
+    <div id="online-content"></div>
+    <div class="btn-row" style="margin-top:24px"><button class="btn secondary small" id="btn-back-online">← Kembali</button></div>
+  </div>
+
+  <!-- GAME -->
+  <div id="screen-game" class="screen" style="padding:0">
+    <div class="ghead">
+      <div class="who" id="game-title">Ular Tangga Akhlak</div>
+      <div class="actions">
+        <button class="icon-btn" id="btn-info" title="Info">ℹ️</button>
+        <button class="icon-btn" id="btn-exit" title="Keluar">✕</button>
+      </div>
+    </div>
+    <div class="board-wrap"><div id="board"></div></div>
+    <div class="players" id="players-bar"></div>
+    <div class="actionbar">
+      <button class="btn main-btn" id="btn-roll">🎲 Lempar Dadu</button>
+      <div class="info" id="turn-info"></div>
+    </div>
+  </div>
+
+  <!-- LOG SCREEN -->
+  <div id="screen-log" class="screen" style="padding:0">
+    <div class="ghead">
+      <div class="who">Riwayat Permainan</div>
+      <div class="actions"><button class="icon-btn" id="btn-close-log">✕</button></div>
+    </div>
+    <div class="log-view" id="log-view"></div>
+  </div>
+</div>
+
+<div id="modal" class="modal hidden"><div class="modal-card" id="modal-body"></div></div>
+<div id="toast"></div>
+
+<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+<script>
+/* ============================================================
+   1. DATA PERMAINAN
+   ============================================================ */
+const BOARD = [
+ {id:1,  nama:'Lahir',                    tipe:'START'},
+ {id:2,  nama:'Belajar mengaji',           tipe:'TANGGA', ke:4},
+ {id:3,  nama:'Bermain jujur',             tipe:'NETRAL'},
+ {id:4,  nama:'Shalat Subuh',              tipe:'MASJID'},
+ {id:5,  nama:'Bohong pada ibu',           tipe:'JEBAKAN', mundur:2},
+ {id:6,  nama:'Memaafkan teman',           tipe:'TANGGA', ke:9},
+ {id:7,  nama:'Menggunjing',               tipe:'ULAR', ke:5},
+ {id:8,  nama:'Menolong tetangga',         tipe:'SEDEKAH'},
+ {id:9,  nama:'Malas shalat',              tipe:'JEBAKAN', skip:1},
+ {id:10, nama:'Puasa sunnah',              tipe:'TANGGA', ke:13},
+ {id:11, nama:'PERSIMPANGAN',              tipe:'CABANG'},
+ {id:12, nama:'Sabar difitnah',            tipe:'SABAR'},
+ {id:13, nama:'Sedekah diam-diam',         tipe:'SEDEKAH'},
+ {id:14, nama:'Riya beramal',              tipe:'ULAR', ke:9},
+ {id:15, nama:'Taubat & istighfar',        tipe:'TAUBAT'},
+ {id:16, nama:'Kartu Dilema',              tipe:'UJIAN'},
+ {id:17, nama:'Berbakti ortu',             tipe:'TANGGA', ke:21},
+ {id:18, nama:'Curang kerja kel.',         tipe:'JEBAKAN', mundur:3},
+ {id:19, nama:'Berbagi ilmu',              tipe:'SEDEKAH'},
+ {id:20, nama:'Ujian hidup',               tipe:'SABAR'},
+ {id:21, nama:'Amanah kerja',              tipe:'MASJID'},
+ {id:22, nama:'Sombong prestasi',          tipe:'ULAR', ke:16},
+ {id:23, nama:'Menjaga lisan',             tipe:'TANGGA', ke:26},
+ {id:24, nama:'Kartu Kejadian',            tipe:'KARTU'},
+ {id:25, nama:'Riba & utang',              tipe:'JEBAKAN', mundur:4},
+ {id:26, nama:'Amal jariyah',              tipe:'TANGGA', ke:30},
+ {id:27, nama:'Zakat & infaq',             tipe:'SEDEKAH'},
+ {id:28, nama:'Dengki',                    tipe:'JEBAKAN', skip:1},
+ {id:29, nama:'Istighfar',                 tipe:'TAUBAT'},
+ {id:30, nama:'Kartu Dilema',              tipe:'UJIAN'},
+ {id:31, nama:'Silaturahmi',               tipe:'TANGGA', ke:34},
+ {id:32, nama:'Utang tak dibayar',         tipe:'JEBAKAN', mundur:3},
+ {id:33, nama:'Doa untuk ortu',            tipe:'MASJID'},
+ {id:34, nama:'Ilmu bermanfaat',           tipe:'SEDEKAH'},
+ {id:35, nama:'Lalai akhirat',             tipe:'ULAR', ke:28},
+ {id:36, nama:'Sabar sakit',               tipe:'SABAR'},
+ {id:37, nama:'Husnuzan',                  tipe:'NETRAL'},
+ {id:38, nama:'Kartu Refleksi',            tipe:'KARTU'},
+ {id:39, nama:'Menjaga husnul',            tipe:'NETRAL'},
+ {id:40, nama:'HUSNUL KHATIMAH',           tipe:'FINISH'}
+];
+const B = Object.fromEntries(BOARD.map(t=>[t.id,t]));
+
+const CARDS = [
+ {kode:'K01',judul:'Dompet di Jalan',teks:'Kamu menemukan dompet berisi uang dan KTP. Jalan sepi.',opsi:[
+   {label:'Kembalikan ke pemilik',eff:{a:2,p:1}},
+   {label:'Ambil diam-diam',eff:{p:3,a:-3,move:-2}},
+   {label:'Ambil lalu sedekahkan',eff:{p:1,a:-2,i:1}}],makna:'Niat baik tidak menghalalkan cara.'},
+ {kode:'K02',judul:'Teman Mencontek',teks:'Temanmu mencontek dan berbisik "Diam aja ya."',opsi:[
+   {label:'Diam saja',eff:{a:-1}},
+   {label:'Tegur baik-baik',eff:{a:2,move:-1}},
+   {label:'Laporkan pengawas',eff:{p:1,a:1,move:-1}}],makna:'Tidak ada pilihan yang sepenuhnya nyaman.'},
+ {kode:'K03',judul:'Kembalian Lebih',teks:'Kasir mengembalikan uang lebih Rp20.000.',opsi:[
+   {label:'Kembalikan sekarang',eff:{a:2}},
+   {label:'Diamkan',eff:{p:2,a:-2}},
+   {label:'Kembalikan besok',eff:{a:1,dadu:true}}],makna:'Kejujuran tidak menunggu waktu nyaman.'},
+ {kode:'K04',judul:'Grup Chat Ghibah',teks:'Grup kelas ramai membicarakan keburukan guru.',opsi:[
+   {label:'Keluar dari grup',eff:{a:2}},
+   {label:'Diam, tidak ikut',eff:{a:1}},
+   {label:'Ikut menimpali',eff:{a:-2,p:1}},
+   {label:'Bela guru',eff:{a:3,move:-1}}],makna:'Lisan bisa melukai lebih dalam dari tangan.'},
+ {kode:'K05',judul:'Janji vs Tawaran',teks:'Kamu sudah janji membantu, lalu datang tawaran jalan-jalan.',opsi:[
+   {label:'Tepati janji',eff:{a:3,p:1}},
+   {label:'Batalkan dengan alasan',eff:{a:-2,p:2}},
+   {label:'Ajak teman ikut',eff:{a:1,dadu:true}}],makna:'Janji itu utang.'},
+ {kode:'K06',judul:'Ibu Memanggil',teks:'Kamu asyik bermain. Ibu minta bantuan.',opsi:[
+   {label:'Langsung datang',eff:{a:3}},
+   {label:'Selesaikan dulu',eff:{a:1}},
+   {label:'Pura-pura tak dengar',eff:{a:-3,skip:1}}],makna:'Birrul walidain diuji di hal kecil.'},
+ {kode:'K07',judul:'Pinjam Uang',teks:'Teman meminjam uang. Kamu tahu dia sering lupa.',opsi:[
+   {label:'Pinjami seikhlasnya',eff:{a:2,p:1}},
+   {label:'Tolak dengan jujur',eff:{a:1}},
+   {label:'Pinjami, diungkit',eff:{a:-2}}],makna:'Berbuat baik pun butuh cara.'},
+ {kode:'K08',judul:'Shalat atau Teman',teks:'Waktu shalat hampir habis. Teman menunggu.',opsi:[
+   {label:'Shalat dulu',eff:{p:2,a:1}},
+   {label:'Shalat terburu-buru',eff:{p:1,a:-1}},
+   {label:'Tinggalkan shalat',eff:{p:-2,a:-2}}],makna:'Kualitas ibadah juga soal cara.'},
+ {kode:'K09',judul:'Difitnah',teks:'Kamu difitnah di medsos. Kamu tahu pelakunya.',opsi:[
+   {label:'Doakan & klarifikasi',eff:{a:3,p:1}},
+   {label:'Balas tuduhan',eff:{a:-3,p:2}},
+   {label:'Diamkan, tahan diri',eff:{a:2,skip:1}}],makna:'Menahan diri bukan kalah.'},
+ {kode:'K10',judul:'Dimintai Contekan',teks:'Teman memohon jawaban saat ujian.',opsi:[
+   {label:'Tolak & tawari belajar',eff:{a:3,i:1}},
+   {label:'Beri contekan',eff:{p:1,a:-3}},
+   {label:'Pura-pura tak dengar',eff:{a:-1}}],makna:'Menolong belum tentu membenarkan.'},
+ {kode:'K11',judul:'Barang Teman',teks:'Kamu temukan pulpen bagus milik teman yang sering menyakitimu.',opsi:[
+   {label:'Kembalikan',eff:{a:3}},
+   {label:'Simpan',eff:{p:1,a:-3}},
+   {label:'Kembalikan diam-diam',eff:{a:2}}],makna:'Akhlak tidak menunggu balasan.'},
+ {kode:'K12',judul:'Disalahkan',teks:'Adik salah, menyalahkanmu di depan orang tua.',opsi:[
+   {label:'Jelaskan tenang',eff:{a:2}},
+   {label:'Diam, tahan diri',eff:{a:3,skip:1}},
+   {label:'Balas buka aibnya',eff:{a:-3,p:1}}],makna:'Menahan marah itu kuat.'},
+ {kode:'K13',judul:'Rahasia Berbahaya',teks:'Kamu tahu rahasia yang bisa selamatkan orang, tapi merusak teman.',opsi:[
+   {label:'Buka demi kebaikan',eff:{a:1,p:1,dadu:true}},
+   {label:'Simpan',eff:{a:-2}},
+   {label:'Bujuk teman mengaku',eff:{a:3,i:1}}],makna:'Kebenaran pun butuh cara.'},
+ {kode:'K14',judul:'Bohong Kecil',teks:'Kamu terlambat. Bohong bisa hindarkan hukuman.',opsi:[
+   {label:'Akui jujur',eff:{a:3}},
+   {label:'Berbohong',eff:{p:1,a:-2,move:-1}},
+   {label:'Diam, terima hukuman',eff:{a:1}}],makna:'Bohong kecil melatih bohong besar.'},
+ {kode:'K15',judul:'Jadi Saksi',teks:'Kebenaran yang kamu saksikan merugikan sahabatmu.',opsi:[
+   {label:'Katakan jujur',eff:{a:2,p:1,move:-1}},
+   {label:'Diam',eff:{a:-2}},
+   {label:'Bantu menutupi',eff:{a:-3,p:1}}],makna:'Keadilan diuji saat merugikan diri.'},
+ {kode:'K16',judul:'Uang Pas-pasan',teks:'Uang terbatas: beli buku atau sedekah ke pengemis.',opsi:[
+   {label:'Sedekah',eff:{p:2,a:2}},
+   {label:'Beli buku',eff:{p:1,i:2}},
+   {label:'Bagi dua',eff:{p:1,a:1,i:1}}],makna:'Semua pilihan punya nilai.'},
+ {kode:'K17',judul:'Teman Dituduh',teks:'Teman dituduh hal yang tidak dia lakukan. Kamu tahu.',opsi:[
+   {label:'Bela',eff:{a:3}},
+   {label:'Diam',eff:{a:-2}},
+   {label:'Bela jika aman',eff:{a:1}}],makna:'Pembelaan adalah keberanian.'},
+ {kode:'K18',judul:'Lelah & Ibu',teks:'Kamu sangat lelah. Ibu minta bantuan kecil.',opsi:[
+   {label:'Bantu meski lelah',eff:{a:3}},
+   {label:'Tolak dengan sopan',eff:{a:-1}},
+   {label:'Bantu sambil mengeluh',eff:{a:1}}],makna:'Niat terlihat dari cara.'},
+ {kode:'K19',judul:'Mencuri Kecil',teks:'Kamu lihat teman ambil barang kecil di toko.',opsi:[
+   {label:'Nasihati diam-diam',eff:{a:3}},
+   {label:'Laporkan ke guru',eff:{a:1,p:1,move:-1}},
+   {label:'Diam saja',eff:{a:-2}}],makna:'Amar makruf bertingkat.'},
+ {kode:'K20',judul:'Menang dengan Curang',teks:'Kamu bisa menang jika berbuat curang di akhir.',opsi:[
+   {label:'Menang jujur',eff:{p:2,a:3}},
+   {label:'Curang',eff:{p:5,a:-5,move:-3}},
+   {label:'Tawarkan seri',eff:{a:2,p:1}}],makna:'Kartu penutup.'}
+];
+
+const EVENTS = [
+ {judul:'Musim Panen',teks:'Pemain dengan P terendah dapat 2 P. Yang lain boleh sumbang 1 P (dapat A+1).',eff:{panen:true}},
+ {judul:'Kabar Duka',teks:'Pemain berakhlak ≥3 melayat → A+1.',eff:{melayat:true}},
+ {judul:'Ujian Mendadak',teks:'Semua mundur 1 petak, kecuali yang berilmu ≥2.',eff:{semuaMundur:1,syaratI:2}},
+ {judul:'Fitnah Medsos',teks:'Pemain berakhlak terendah mundur 2 petak.',eff:{terendahMundur:2}},
+ {judul:'Banjir Bandang',teks:'Semua pemain di jalur pintas mundur 2 petak.',eff:{pintasMundur:2}},
+ {judul:'Rezeki Tak Terduga',teks:'Kamu temukan uang. Ambil (P+2) atau serahkan ke kotak amal (A+2).',eff:{pilihanRezeki:true}},
+ {judul:'Bulan Ramadhan',teks:'Semua pemain mendapat P+1 dan A+1.',eff:{semuaP:1,semuaA:1}},
+ {judul:'Musibah Keluarga',teks:'Pemain berakhlak terendah mundur 3 petak.',eff:{terendahMundur:3}},
+ {judul:'Undangan Kebaikan',teks:'Yang mau bagikan 1 P ke pemain lain dapat A+2.',eff:{berbagi:true}},
+ {judul:'Tahun Kekeringan',teks:'Semua kehilangan 1 P (min 0).',eff:{semuaPMinus:1}}
+];
+
+const REFLEKSI = [
+ {judul:'Siapa yang Kamu Sakiti?',teks:'Sebutkan satu orang yang pernah kamu sakiti minggu ini. Apa satu hal kecil untuk memperbaikinya?'},
+ {judul:'Amal Tanpa Saksi',teks:'Ceritakan satu kebaikan yang kamu lakukan tanpa ada yang tahu. Mengapa?'},
+ {judul:'Marah yang Ditahan',teks:'Kapan terakhir menahan marah padahal bisa membalas? Bagaimana rasanya?'},
+ {judul:'Kebiasaan Ingin Diubah',teks:'Sebutkan satu kebiasaan kecil yang ingin kamu ubah mulai besok.'},
+ {judul:'Utang Maaf',teks:'Siapa yang pernah kamu zalimi dan belum minta maaf? Apa yang membuatmu belum?'}
+];
+
+const COLORS = ['#ef4444','#3b82f6','#22c55e','#eab308'];
+
+/* ============================================================
+   2. STATE & LOGIC (pure, dipakai host & lokal)
+   ============================================================ */
+const clamp=(v,mn,mx)=>Math.max(mn,Math.min(mx,v));
+
+function newState(names){
+  return {
+    version:1,
+    players: names.map((n,i)=>({
+      id:i, nama:n||('Pemain '+(i+1)), warna:COLORS[i%4],
+      pos:1, lane:'main', p:0, a:0, i:0, skip:0,
+      selesai:false, menolong:0
+    })),
+    turn:0,
+    phase:'IDLE',
+    log:[],
+    winner:null,
+    pendingCard:null
+  };
+}
+
+function pushLog(s,msg){
+  s.log.push({t:Date.now(),msg});
+  if(s.log.length>300) s.log=s.log.slice(-300);
+}
+
+function aktif(s){ return s.players[s.turn]; }
+function currentPlayer(s){ return s.players[s.turn]; }
+
+function nextPos(p){
+  if(p.lane==='pintas'){
+    if(p.pos==='P1') return 'P2';
+    if(p.pos==='P2') return 'P3';
+    if(p.pos==='P3') return 'P4';
+    if(p.pos==='P4') return 24;
+  }
+  if(typeof p.pos==='number'){
+    if(p.pos>=40) return 40;
+    return p.pos+1;
+  }
+  return p.pos;
+}
+
+function gerak(s,p,steps){
+  if(steps>0){
+    if(p.lane==='main' && typeof p.pos==='number' && p.pos+steps>40){
+      p.a=clamp(p.a+1,-5,5);
+      pushLog(s,`${p.nama}: tak bisa lewati petak 40 → tetap, A+1 (sabar)`);
+      return;
+    }
+    for(let k=0;k<steps;k++){
+      const n=nextPos(p);
+      if(n===24 && p.lane==='pintas') p.lane='main';
+      p.pos=n;
+      if(p.pos===40) break;
+    }
+  } else {
+    for(let k=0;k<Math.abs(steps);k++){
+      if(p.lane==='pintas'){
+        if(p.pos==='P1'){p.lane='main';p.pos=11;}
+        else if(p.pos==='P2') p.pos='P1';
+        else if(p.pos==='P3') p.pos='P2';
+        else if(p.pos==='P4') p.pos='P3';
+      } else if(typeof p.pos==='number' && p.pos>1){
+        p.pos-=1;
+      }
+    }
+  }
+}
+
+function applyEff(s,p,eff,sumber=''){
+  if(!eff) return;
+  if(eff.p) p.p=Math.max(0,p.p+eff.p);
+  if(eff.a) p.a=clamp(p.a+eff.a,-5,5);
+  if(eff.i) p.i=clamp(p.i+eff.i,0,3);
+  if(eff.skip) p.skip+=eff.skip;
+  if(eff.move) gerak(s,p,eff.move);
+  if(eff.ke!=null){ p.pos=eff.ke; p.lane='main'; }
+  if(eff.dadu){
+    const g=1+Math.floor(Math.random()*6);
+    if(g%2===0){p.a=clamp(p.a+1,-5,5);pushLog(s,`${p.nama}: dadu keberuntungan (${g}) → A+1`);}
+    else{p.a=clamp(p.a-1,-5,5);pushLog(s,`${p.nama}: dadu keberuntungan (${g}) → A-1`);}
+  }
+  const parts=[];
+  if(eff.p) parts.push(`P${eff.p>=0?'+':''}${eff.p}`);
+  if(eff.a) parts.push(`A${eff.a>=0?'+':''}${eff.a}`);
+  if(eff.i) parts.push(`I${eff.i>=0?'+':''}${eff.i}`);
+  pushLog(s,`${p.nama} ${sumber}${parts.length?' → '+parts.join(', '):''}`);
+}
+
+function berbagi(s,p){
+  const lain=s.players.filter(x=>x.id!==p.id);
+  if(lain.length===0){p.a=clamp(p.a+1,-5,5);return;}
+  const miskin=lain.reduce((a,b)=>a.p<=b.p?a:b);
+  if(p.p>=1){
+    p.p-=1; miskin.p+=1; p.p+=2; p.a=clamp(p.a+1,-5,5); p.menolong+=1;
+    pushLog(s,`${p.nama} bersedekah 1 P ke ${miskin.nama} → P+2, A+1`);
+  } else {
+    p.a=clamp(p.a+1,-5,5);
+    pushLog(s,`${p.nama} belum punya pahala → hanya A+1`);
+  }
+}
+
+/* Returns {prompt} untuk ditangani UI, atau null (efek langsung selesai) */
+function resolveTile(s,p){
+  if(p.lane==='pintas') return resolvePintas(s,p);
+  const t=B[p.pos];
+  if(!t) return null;
+  switch(t.tipe){
+    case 'TANGGA':
+      pushLog(s,`${p.nama}: ${t.nama} → naik ke ${t.ke}`);
+      p.pos=t.ke; return resolveTile(s,p);
+    case 'ULAR':
+      pushLog(s,`${p.nama}: ${t.nama} → turun ke ${t.ke}`);
+      p.pos=t.ke; return null;
+    case 'MASJID':
+      p.p+=1; p.a=clamp(p.a+1,-5,5);
+      pushLog(s,`${p.nama}: ${t.nama} → P+1, A+1`); return null;
+    case 'SEDEKAH':
+      berbagi(s,p); return null;
+    case 'SABAR':
+      p.skip+=1; p.a=clamp(p.a+2,-5,5);
+      pushLog(s,`${p.nama}: ${t.nama} → skip 1 giliran, A+2`); return null;
+    case 'TAUBAT':
+      gerak(s,p,-2); p.p+=2; p.a=clamp(p.a+1,-5,5);
+      pushLog(s,`${p.nama}: taubat → mundur 2, P+2, A+1`); return null;
+    case 'JEBAKAN':
+      if(t.mundur){gerak(s,p,-t.mundur);pushLog(s,`${p.nama}: ${t.nama} → mundur ${t.mundur}`);}
+      if(t.skip){p.skip+=t.skip;pushLog(s,`${p.nama}: ${t.nama} → skip ${t.skip}`);}
+      return null;
+    case 'CABANG':
+      return {type:'cabang',playerId:p.id};
+    case 'UJIAN':
+      return {type:'dilema',playerId:p.id,card:CARDS[Math.floor(Math.random()*CARDS.length)]};
+    case 'KARTU':
+      if(p.pos===38) return {type:'refleksi',playerId:p.id,r:REFLEKSI[Math.floor(Math.random()*REFLEKSI.length)]};
+      return {type:'kejadian',playerId:p.id,ev:EVENTS[Math.floor(Math.random()*EVENTS.length)]};
+    case 'FINISH': return {type:'finish',playerId:p.id};
+    default: return null;
+  }
+}
+
+function resolvePintas(s,p){
+  if(p.pos==='P1'){
+    return {type:'pintasP1',playerId:p.id};
+  }
+  if(p.pos==='P2'){
+    applyEff(s,p,{p:3,a:-2},'di P2');
+    return null;
+  }
+  if(p.pos==='P3'){
+    p.a=clamp(p.a-2,-5,5);
+    if(p.a<0){p.pos=10;p.lane='main';pushLog(s,`${p.nama}: A minus di P3 → balik ke 10`);}
+    else pushLog(s,`${p.nama} di P3: A-2`);
+    return null;
+  }
+  if(p.pos==='P4'){
+    if(p.a>=2) return {type:'pintasP4',playerId:p.id};
+    p.pos=24; p.lane='main'; p.a=clamp(p.a-1,-5,5);
+    pushLog(s,`${p.nama}: A kurang → lanjut ke 24 dengan A-1`);
+    return null;
+  }
+  return null;
+}
+
+function cekFinish(s,p){
+  if(p.a<3){
+    pushLog(s,`${p.nama} di 40 tapi A=${p.a} (<3) → belum bisa finis.`);
+    p.a=clamp(p.a+1,-5,5);
+    pushLog(s,`${p.nama}: menambah bekal A+1`);
+    return false;
+  }
+  const terjebak=s.players.filter(x=>x.id!==p.id && x.a<0 && !x.selesai);
+  if(terjebak.length>0){
+    pushLog(s,`${p.nama} belum bisa finis — masih ada pemain terjebak. Menolong dulu.`);
+    p.p=Math.max(0,p.p-1);
+    terjebak[0].a=clamp(terjebak[0].a+2,-5,5);
+    p.menolong+=1;
+    pushLog(s,`${p.nama} menolong ${terjebak[0].nama}: P-1, ${terjebak[0].nama} A+2`);
+    return false;
+  }
+  if(p.menolong<1){
+    pushLog(s,`${p.nama} belum pernah menolong → belum bisa finis.`);
+    return false;
+  }
+  p.selesai=true;
+  pushLog(s,`🏆 ${p.nama} — HUSNUL KHATIMAH (P=${p.p}, A=${p.a})`);
+  return true;
+}
+
+function lanjutGiliran(s){
+  if(s.players.every(x=>x.selesai)){ s.phase='GAME_OVER'; return; }
+  let guard=0;
+  do {
+    s.turn=(s.turn+1)%s.players.length;
+    guard++;
+  } while(s.players[s.turn].selesai && guard<100);
+  const p=aktif(s);
+  if(p.skip>0){
+    p.skip-=1;
+    pushLog(s,`${p.nama} melewati giliran.`);
+    return lanjutGiliran(s);
+  }
+  s.phase='IDLE';
+}
+
+/* ============================================================
+   3. GAME SESSION (lokal & host pakai ini)
+   ============================================================ */
+class GameSession {
+  constructor(state, onUpdate){
+    this.s=state;
+    this.onUpdate=onUpdate||(()=>{});
+  }
+  roll(){
+    if(this.s.phase!=='IDLE') return;
+    const p=aktif(this.s);
+    if(p.selesai) return;
+    this.s.phase='ROLLING';
+    const d=1+Math.floor(Math.random()*6);
+    pushLog(this.s,`${p.nama} melempar dadu: ${d}`);
+    gerak(this.s,p,d);
+    this.onUpdate();
+    setTimeout(()=>{
+      if(p.pos===40 && p.lane==='main'){
+        const ok=cekFinish(this.s,p);
+        if(ok){ this.s.phase='GAME_OVER'; this.onUpdate(); return; }
+        lanjutGiliran(this.s);
+        this.onUpdate(); return;
+      }
+      const prompt=resolveTile(this.s,p);
+      if(prompt){
+        this.s.pendingCard=prompt;
+        this.s.phase='AWAIT';
+        this.onUpdate();
+      } else {
+        lanjutGiliran(this.s);
+        this.onUpdate();
+      }
+    }, 500);
+  }
+  resolvePrompt(action){
+    const prompt=this.s.pendingCard;
+    if(!prompt) return;
+    const p=this.s.players[prompt.playerId];
+    switch(prompt.type){
+      case 'dilema': {
+        const o=prompt.card.opsi[action.index];
+        if(!o) return;
+        applyEff(this.s,p,o.eff,`pilih "${o.label}"`);
+        break;
+      }
+      case 'cabang': {
+        if(action.pintas){
+          p.lane='pintas'; p.pos='P1';
+          pushLog(this.s,`${p.nama} masuk jalur pintas.`);
+          const p2=resolvePintas(this.s,p);
+          if(p2){ this.s.pendingCard=p2; this.onUpdate(); return; }
+        } else {
+          pushLog(this.s,`${p.nama} tetap di jalur utama.`);
+        }
+        break;
+      }
+      case 'pintasP1': {
+        if(action.back){
+          p.lane='main'; p.pos=12;
+          pushLog(this.s,`${p.nama} kembali ke jalur utama (12).`);
+        } else {
+          if(p.a>=2){ p.a=clamp(p.a-2,-5,5); pushLog(this.s,`${p.nama}: lanjut P1, A-2`); }
+          else { p.a=clamp(p.a-1,-5,5); p.pos=6; p.lane='main'; pushLog(this.s,`${p.nama}: gagal syarat → mundur ke 6`); }
+        }
+        break;
+      }
+      case 'pintasP4': {
+        if(action.taubat){
+          p.pos=16; p.a=clamp(p.a+1,-5,5); p.lane='main';
+          pushLog(this.s,`${p.nama}: taubat, kembali ke 16`);
+        } else {
+          p.pos=24; p.lane='main'; p.a=clamp(p.a-1,-5,5);
+          pushLog(this.s,`${p.nama}: lanjut ke 24 dengan A-1`);
+        }
+        break;
+      }
+      case 'kejadian': {
+        const e=prompt.ev.eff;
+        if(e.semuaMundur) this.s.players.forEach(x=>{
+          if(e.syaratI!=null && x.i>=e.syaratI) return;
+          gerak(this.s,x,-e.semuaMundur);
+        });
+        if(e.semuaP) this.s.players.forEach(x=>x.p+=e.semuaP);
+        if(e.semuaA) this.s.players.forEach(x=>x.a=clamp(x.a+e.semuaA,-5,5));
+        if(e.semuaPMinus) this.s.players.forEach(x=>x.p=Math.max(0,x.p-e.semuaPMinus));
+        if(e.terendahMundur){
+          const t=this.s.players.reduce((a,b)=>a.a<=b.a?a:b);
+          gerak(this.s,t,-e.terendahMundur);
+        }
+        if(e.pintasMundur) this.s.players.forEach(x=>{if(x.lane==='pintas') gerak(this.s,x,-e.pintasMundur);});
+        if(e.melayat) this.s.players.forEach(x=>{if(x.a>=3) x.a=clamp(x.a+1,-5,5);});
+        if(e.panen){
+          const t=this.s.players.reduce((a,b)=>a.p<=b.p?a:b);
+          t.p+=2;
+        }
+        if(e.berbagi && p.p>=1){ p.p-=1; p.a=clamp(p.a+2,-5,5); }
+        if(e.pilihanRezeki){
+          if(action.rezeki==='ambil'){p.p+=2;}
+          else {p.a=clamp(p.a+2,-5,5);}
+        }
+        pushLog(this.s,`Kejadian: ${prompt.ev.judul}`);
+        break;
+      }
+      case 'refleksi': {
+        if(action.lewati){
+          pushLog(this.s,`${p.nama}: refleksi dilewati.`);
+        } else {
+          p.a=clamp(p.a+2,-5,5);
+          pushLog(this.s,`${p.nama}: refleksi dijawab → A+2`);
+        }
+        break;
+      }
+      case 'finish': {
+        const ok=cekFinish(this.s,p);
+        if(ok){ this.s.phase='GAME_OVER'; this.s.pendingCard=null; this.onUpdate(); return; }
+        break;
+      }
+    }
+    this.s.pendingCard=null;
+    lanjutGiliran(this.s);
+    this.onUpdate();
+  }
+}
+
+/* ============================================================
+   4. UI GLOBAL
+   ============================================================ */
+let session=null;
+let localMode=true;
+let myPlayerId=0; // untuk online guest, id pemain yang sedang pegang device ini
+
+function $(id){return document.getElementById(id)}
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  $(id).classList.add('active');
+}
+function toast(msg){
+  const t=$('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  clearTimeout(t._tid);
+  t._tid=setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+/* ============================================================
+   5. LANDING
+   ============================================================ */
+$('btn-local').onclick=()=>{ localMode=true; showScreen('screen-setup'); initSetup(); };
+$('btn-online').onclick=()=>{ localMode=false; showScreen('screen-online'); initOnlineTabs(); };
+$('btn-rules').onclick=()=>{
+  showModal(`
+    <h2>Aturan Singkat</h2>
+    <p style="font-size:13.5px;line-height:1.7">
+    <b>Tujuan:</b> sampai di petak 40 (Husnul Khatimah) dengan <b>Akhlak ≥ 3</b>, sudah <b>menolong minimal 1×</b>, dan <b>tidak ada pemain terjebak</b>.<br><br>
+    <b>3 Sumber Daya:</b><br>
+    • <b>P</b> (Pahala) — untuk skor & aksi tertentu<br>
+    • <b>A</b> (Akhlak) — kunci syarat finis (−5 sampai +5)<br>
+    • <b>I</b> (Ilmu) — untuk hal-hal khusus<br><br>
+    <b>Petak:</b><br>
+    🕌 Masjid → P+1, A+1<br>
+    💰 Sedekah → bagi 1 P, dapat P+2 & A+1<br>
+    ⏳ Sabar → skip 1 giliran, A+2<br>
+    🔄 Taubat → mundur 2, dapat P+2 & A+1<br>
+    ❓ Ujian → kartu dilema<br><br>
+    <b>Yang penting:</b> tidak ada jawaban salah. Semua pilihan punya konsekuensi. Menolong itu kuat, bukan rugi.
+    </p>
+    <button class="opt" onclick="closeModal()">Mengerti</button>
+  `);
+};
+
+/* ============================================================
+   6. SETUP LOCAL
+   ============================================================ */
+function initSetup(){
+  renderNameInputs(2);
+}
+function renderNameInputs(n){
+  const box=$('name-inputs');
+  box.innerHTML='';
+  for(let i=0;i<n;i++){
+    const inp=document.createElement('input');
+    inp.className='input';
+    inp.placeholder=`Nama pemain ${i+1}`;
+    inp.maxLength=14;
+    inp.dataset.idx=i;
+    box.appendChild(inp);
+  }
+  $('btn-add-player').style.display = n>=4 ? 'none' : 'block';
+}
+$('btn-add-player').onclick=()=>{
+  const cur=$('name-inputs').querySelectorAll('input').length;
+  if(cur>=4) return;
+  const names=[];
+  $('name-inputs').querySelectorAll('input').forEach(x=>names.push(x.value));
+  renderNameInputs(cur+1);
+  $('name-inputs').querySelectorAll('input').forEach((x,i)=>{ if(names[i]) x.value=names[i]; });
+};
+$('btn-back-setup').onclick=()=>showScreen('screen-landing');
+$('btn-start-local').onclick=()=>{
+  const inputs=[...$('name-inputs').querySelectorAll('input')];
+  const names=inputs.map((x,i)=>x.value.trim()||`Pemain ${i+1}`);
+  if(names.length<2){ toast('Minimal 2 pemain'); return; }
+  startLocalGame(names);
+};
+
+function startLocalGame(names){
+  myPlayerId=-1;
+  const st=newState(names);
+  pushLog(st,'Permainan dimulai. Tidak ada jawaban salah — hanya pilihan.');
+  session=new GameSession(st, renderGame);
+  showScreen('screen-game');
+  renderGame();
+}
+
+/* ============================================================
+   7. RENDER GAME
+   ============================================================ */
+function urutanTampil(){
+  const out=[];
+  for(let r=0;r<5;r++){
+    const row=[];
+    for(let c=0;c<8;c++) row.push(r*8+c+1);
+    if(r%2===1) row.reverse();
+    out.push(...row);
+  }
+  return out;
+}
+
+function renderGame(){
+  if(!session) return;
+  const s=session.s;
+
+  // Board
+  const bd=$('board');
+  bd.innerHTML='';
+  urutanTampil().forEach(id=>{
+    const t=B[id];
+    const div=document.createElement('div');
+    div.className='cell '+(t.tipe||'');
+    const isi=s.players.filter(p=>p.lane==='main' && p.pos===id);
+    const aktifP=aktif(s);
+    if(aktifP && aktifP.lane==='main' && aktifP.pos===id) div.classList.add('highlight');
+    div.innerHTML=`<div class="num">${id}</div>
+      <div class="nm">${t.nama}</div>
+      <div class="tokens">${isi.map(p=>`<span class="tok" style="background:${p.warna}"></span>`).join('')}</div>`;
+    bd.appendChild(div);
+  });
+
+  // Player bar
+  const pb=$('players-bar');
+  pb.innerHTML='';
+  s.players.forEach((p,i)=>{
+    const d=document.createElement('div');
+    d.className='pcard'+(i===s.turn?' active':'');
+    d.innerHTML=`<div class="nm" style="color:${p.warna}">${p.nama}</div>
+      <div class="stats">
+        <span class="st">P ${p.p}</span>
+        <span class="st">A ${p.a}</span>
+        <span class="st">I ${p.i}</span>
+        ${p.selesai?'<span>🏆</span>':''}
+      </div>
+      <div style="font-size:9px;opacity:.6;margin-top:2px">Petak ${p.pos}${p.skip>0?' · skip':''}</div>`;
+    pb.appendChild(d);
+  });
+
+  // Action bar
+  const p=aktif(s);
+  const btn=$('btn-roll');
+  const info=$('turn-info');
+  if(s.phase==='GAME_OVER'){
+    btn.disabled=true;
+    btn.textContent='Permainan Selesai';
+    info.textContent='Waktunya refleksi bersama.';
+  } else if(s.phase==='AWAIT'){
+    btn.disabled=true;
+    btn.textContent='Menunggu pilihan…';
+    info.textContent=`${p.nama}`;
+  } else {
+    btn.disabled=false;
+    btn.textContent=`🎲 ${p.nama}: Lempar Dadu`;
+    info.textContent=`Giliran ${p.nama}`;
+  }
+
+  // Handle pending prompt
+  if(s.pendingCard && s.pendingCard.playerId===myPlayerId || (myPlayerId===-1 && s.pendingCard)){
+    if(!$('modal').classList.contains('hidden') && $('modal').dataset.pending==='1') return;
+    showPrompt(s.pendingCard);
+  } else if(s.pendingCard && myPlayerId!==-1 && s.pendingCard.playerId!==myPlayerId){
+    // Another player's turn in online mode — show waiting
+    const pc=s.players[s.pendingCard.playerId];
+    if($('modal').classList.contains('hidden')){
+      showModal(`<h2>Menunggu ${pc.nama}</h2><p>${pc.nama} sedang memilih…</p><div class="spinner"></div>`, true);
+    }
+  }
+}
+
+$('btn-roll').onclick=()=>{
+  if(!session) return;
+  const s=session.s;
+  if(localMode){
+    if(s.pendingCard) return;
+    session.roll();
+  } else {
+    // online
+    if(myPlayerId===0){
+      // host = player 0
+      if(s.turn===0){ session.roll(); broadcastState(); }
+      else toast('Bukan giliranmu');
+    } else {
+      if(s.turn!==myPlayerId){ toast('Bukan giliranmu'); return; }
+      sendToHost({type:'action',action:{type:'roll'}});
+    }
+  }
+};
+
+function showPrompt(prompt){
+  const s=session.s;
+  const p=s.players[prompt.playerId];
+
+  if(prompt.type==='dilema'){
+    const c=prompt.card;
+    let html=`<h2>${c.kode} — ${c.judul}</h2><p>${c.teks}</p><div class="hint">${p.nama}, pilih:</div>`;
+    c.opsi.forEach((o,i)=>{
+      const e=o.eff;
+      const tag=[];
+      if(e.p) tag.push(`P${e.p>=0?'+':''}${e.p}`);
+      if(e.a) tag.push(`A${e.a>=0?'+':''}${e.a}`);
+      if(e.i) tag.push(`I${e.i>=0?'+':''}${e.i}`);
+      if(e.move) tag.push(`geser ${e.move>0?'+':''}${e.move}`);
+      html+=`<button class="opt" data-i="${i}">${o.label}<span class="eff">${tag.join(' · ')}</span></button>`;
+    });
+    html+=`<div class="note">${c.makna||''}</div>`;
+    showModal(html);
+    $('modal-body').querySelectorAll('.opt').forEach(btn=>{
+      btn.onclick=()=>{
+        closeModal();
+        if(localMode){ session.resolvePrompt({index:+btn.dataset.i}); }
+        else if(myPlayerId===0){ session.resolvePrompt({index:+btn.dataset.i}); broadcastState(); }
+        else { sendToHost({type:'action',action:{type:'prompt',index:+btn.dataset.i}}); }
+      };
+    });
+    return;
+  }
+
+  if(prompt.type==='cabang'){
+    showModal(`<h2>PERSIMPANGAN</h2><p>Jalan pintas lebih cepat, tapi menggerus akhlak. ${p.nama}, pilih:</p>
+      <button class="opt" data-v="main">Tetap di jalur utama</button>
+      <button class="opt" data-v="pintas">Ambil jalur pintas (P1)</button>`);
+    $('modal-body').querySelectorAll('.opt').forEach(btn=>{
+      btn.onclick=()=>{
+        closeModal();
+        const act={pintas:btn.dataset.v==='pintas'};
+        if(localMode) session.resolvePrompt(act);
+        else if(myPlayerId===0){ session.resolvePrompt(act); broadcastState(); }
+        else sendToHost({type:'action',action:{type:'prompt',...act}});
+      };
+    });
+    return;
+  }
+
+  if(prompt.type==='pintasP1'){
+    showModal(`<h2>Jalur Pintas — P1</h2><p>Kamu membocorkan rencana demi upah. Kembali ke jalur utama, atau lanjut dengan harga akhlak?</p>
+      <button class="opt" data-v="back">Kembali ke jalur utama (12)</button>
+      <button class="opt" data-v="lanjut">Lanjut, terima A-2</button>`);
+    $('modal-body').querySelectorAll('.opt').forEach(btn=>{
+      btn.onclick=()=>{
+        closeModal();
+        const act={back:btn.dataset.v==='back'};
+        if(localMode) session.resolvePrompt(act);
+        else if(myPlayerId===0){ session.resolvePrompt(act); broadcastState(); }
+        else sendToHost({type:'action',action:{type:'prompt',...act}});
+      };
+    });
+    return;
+  }
+
+  if(prompt.type==='pintasP4'){
+    showModal(`<h2>Jalur Pintas — P4</h2><p>Kamu menyesal. Kembali ke jalur utama atau lanjut ke 24?</p>
+      <button class="opt" data-v="taubat">Taubat: kembali ke 16, A+1</button>
+      <button class="opt" data-v="lanjut">Lanjut ke 24, A-1</button>`);
+    $('modal-body').querySelectorAll('.opt').forEach(btn=>{
+      btn.onclick=()=>{
+        closeModal();
+        const act={taubat:btn.dataset.v==='taubat'};
+        if(localMode) session.resolvePrompt(act);
+        else if(myPlayerId===0){ session.resolvePrompt(act); broadcastState(); }
+        else sendToHost({type:'action',action:{type:'prompt',...act}});
+      };
+    });
+    return;
+  }
+
+  if(prompt.type==='kejadian'){
+    const e=prompt.ev;
+    let html=`<h2>Kejadian — ${e.judul}</h2><p>${e.teks}</p>`;
+    if(e.eff.pilihanRezeki){
+      html+=`<button class="opt" data-v="ambil">Ambil uang (P+2)</button>
+             <button class="opt" data-v="amal">Serahkan ke amal (A+2)</button>`;
+    } else {
+      html+=`<button class="opt" data-v="ok">Lanjutkan</button>`;
+    }
+    showModal(html);
+    $('modal-body').querySelectorAll('.opt').forEach(btn=>{
+      btn.onclick=()=>{
+        closeModal();
+        const act={rezeki:btn.dataset.v};
+        if(localMode) session.resolvePrompt(act);
+        else if(myPlayerId===0){ session.resolvePrompt(act); broadcastState(); }
+        else sendToHost({type:'action',action:{type:'prompt',...act}});
+      };
+    });
+    return;
+  }
+
+  if(prompt.type==='refleksi'){
+    const r=prompt.r;
+    showModal(`<h2>Refleksi — ${r.judul}</h2><p>${r.teks}</p>
+      <div class="hint">Jawab dengan 1–2 kalimat. Tidak ada jawaban benar/salah.</div>
+      <button class="opt" data-v="ok">Aku sudah menjawab (A+2)</button>
+      <button class="opt" data-v="lewati">Lewati (tanpa A)</button>`);
+    $('modal-body').querySelectorAll('.opt').forEach(btn=>{
+      btn.onclick=()=>{
+        closeModal();
+        const act={lewati:btn.dataset.v==='lewati'};
+        if(localMode) session.resolvePrompt(act);
+        else if(myPlayerId===0){ session.resolvePrompt(act); broadcastState(); }
+        else sendToHost({type:'action',action:{type:'prompt',...act}});
+      };
+    });
+    return;
+  }
+
+  if(prompt.type==='finish'){
+    showModal(`<h2>Husnul Khatimah</h2><p>${p.nama} sudah di petak 40. Memeriksa syarat finis…</p>
+      <button class="opt" data-v="ok">Periksa</button>`);
+    $('modal-body').querySelectorAll('.opt').forEach(btn=>{
+      btn.onclick=()=>{
+        closeModal();
+        if(localMode) session.resolvePrompt({});
+        else if(myPlayerId===0){ session.resolvePrompt({}); broadcastState(); }
+      };
+    });
+    return;
+  }
+}
+
+/* ============================================================
+   8. MODAL & LOG HELPERS
+   ============================================================ */
+function showModal(html, isWaiting){
+  $('modal-body').innerHTML=html;
+  $('modal').dataset.pending = isWaiting?'0':'1';
+  $('modal').classList.remove('hidden');
+}
+function closeModal(){
+  $('modal').classList.add('hidden');
+  $('modal').dataset.pending='0';
+}
+window.closeModal=closeModal;
+
+$('btn-info').onclick=()=>{
+  if(!session) return;
+  // Show log
+  const lv=$('log-view');
+  lv.innerHTML = session.s.log.slice().reverse().map(l=>`<div class="log-item">${l.msg}</div>`).join('');
+  showScreen('screen-log');
+};
+$('btn-close-log').onclick=()=>showScreen('screen-game');
+
+$('btn-exit').onclick=()=>{
+  if(!confirm('Keluar dari permainan?')) return;
+  session=null;
+  closeModal();
+  if(peer) try{peer.destroy()}catch(e){}
+  peer=null; conns={};
+  showScreen('screen-landing');
+};
+
+/* ============================================================
+   9. ONLINE MODE (PeerJS)
+   ============================================================ */
+let peer=null;
+let conns={}; // id -> DataConnection (untuk host)
+let hostConn=null; // untuk guest
+let isHost=false;
+let roomCode='';
+
+function genCode(){
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let s='';
+  for(let i=0;i<5;i++) s+=chars[Math.floor(Math.random()*chars.length)];
+  return s;
+}
+function peerIdFromCode(code){ return 'uta-pai-'+code.toUpperCase(); }
+
+function initOnlineTabs(){
+  $('tab-host').onclick=()=>{ renderOnlineHost(); };
+  $('tab-join').onclick=()=>{ renderOnlineJoin(); };
+  $('btn-back-online').onclick=()=>{
+    if(peer) try{peer.destroy()}catch(e){}
+    peer=null; conns={}; hostConn=null; isHost=false;
+    showScreen('screen-landing');
+  };
+  // If URL has ?room=
+  const urlRoom=new URLSearchParams(location.search).get('room');
+  if(urlRoom) renderOnlineJoin(urlRoom.toUpperCase());
+  else renderOnlineHost();
+}
+
+function renderOnlineHost(){
+  $('online-content').innerHTML=`
+    <div class="hint-box">
+      <b>Cara main:</b><br>
+      1. Tekan "Buat Room" di bawah<br>
+      2. Bagikan kode/link ke anak-anak<br>
+      3. Tunggu mereka gabung (maks 4 pemain)<br>
+      4. Tekan "Mulai" saat semua siap
+    </div>
+    <button class="btn" id="btn-create-room">Buat Room Baru</button>
+  `;
+  $('btn-create-room').onclick=createRoom;
+}
+function renderOnlineJoin(prefill){
+  $('online-content').innerHTML=`
+    <div class="hint-box">
+      <b>Gabung Room:</b><br>
+      Masukkan kode 5 huruf dari guru/temanmu.
+    </div>
+    <input class="input" id="join-code" placeholder="Contoh: AB3XY" maxlength="5"
+      value="${prefill||''}" style="text-transform:uppercase;text-align:center;font-size:22px;letter-spacing:6px;font-family:ui-monospace,monospace">
+    <input class="input" id="join-name" placeholder="Namamu" maxlength="14">
+    <button class="btn" id="btn-do-join">Gabung →</button>
+    <div id="join-status" style="text-align:center;color:var(--mut);font-size:12px;margin-top:14px"></div>
+  `;
+  if(prefill) $('join-name').focus(); else $('join-code').focus();
+  $('btn-do-join').onclick=doJoin;
+}
+function createRoom(){
+  const code=genCode();
+  roomCode=code;
+  isHost=true;
+  $('online-content').innerHTML=`
+    <div class="hint-box">Sedang membuat room…</div>
+    <div class="spinner"></div>
+  `;
+  peer=new Peer(peerIdFromCode(code), {debug:0});
+  peer.on('open', id=>{
+    const link=`${location.origin}${location.pathname}?room=${code}`;
+    $('online-content').innerHTML=`
+      <div class="hint-box"><b>Room siap! Kode:</b></div>
+      <div class="room-code">${code}</div>
+      <div class="hint-box">Bagikan <b>kode</b> ini ke anak-anak, atau kirim link di bawah:</div>
+      <input class="input" id="share-link" value="${link}" readonly style="font-size:12px">
+      <button class="btn secondary" id="btn-copy">📋 Salin Link</button>
+      <div id="waiting-list" class="hint-box" style="margin-top:20px">
+        <b>Pemain yang sudah gabung:</b>
+        <div id="joined-list" style="margin-top:8px">(belum ada)</div>
+      </div>
+      <button class="btn" id="btn-start-online" disabled>Mulai (minimal 2 pemain)</button>
+    `;
+    $('btn-copy').onclick=()=>{
+      navigator.clipboard.writeText(link).then(()=>toast('Link disalin!'));
+    };
+    $('btn-start-online').onclick=startOnlineGame;
+    // Host dulu = player 1
+    hostPlayers=[{id:0,nama:'Host'}];
+    updateWaitingList();
+  });
+  peer.on('connection', conn=>{
+    conn.on('open',()=>{
+      conns[conn.peer]=conn;
+      conn.on('data', data=>handleGuestData(conn,data));
+      conn.on('close', ()=>{
+        delete conns[conn.peer];
+        // Remove from players if game not started
+        if(!session){
+          hostPlayers=hostPlayers.filter(p=>p.peer!==conn.peer);
+          updateWaitingList();
+        }
+      });
+    });
+  });
+  peer.on('error', err=>{
+    console.error(err);
+    if(err.type==='unavailable-id'){
+      $('online-content').innerHTML=`<div class="hint-box">Kode room sudah dipakai. Silakan coba lagi.</div>
+        <button class="btn" id="btn-retry">Coba Lagi</button>`;
+      $('btn-retry').onclick=createRoom;
+    } else {
+      $('online-content').innerHTML=`<div class="hint-box">Gagal konek: ${err.type}<br>Kamu bisa pakai mode <b>"Main di HP Ini"</b> sebagai alternatif.</div>`;
+    }
+  });
+}
+
+let hostPlayers=[];
+function updateWaitingList(){
+  const el=$('joined-list');
+  if(!el) return;
+  if(hostPlayers.length===0) el.textContent='(belum ada)';
+  else {
+    el.innerHTML=hostPlayers.map((p,i)=>{
+      let name=p.nama;
+      if(p.peer==='SELF'){
+        if(p.nama==='Host') return `<div>${i+1}. <b>${p.nama}</b> (kamu)</div>`;
+      }
+      return `<div>${i+1}. ${name}</div>`;
+    }).join('');
+  }
+  // Enable start if >=2
+  const btn=$('btn-start-online');
+  if(btn) btn.disabled = hostPlayers.length<2;
+}
+
+function handleGuestData(conn,data){
+  if(!data || !data.type) return;
+  if(data.type==='join'){
+    if(session){ conn.send({type:'error',msg:'Permainan sudah berjalan'}); return; }
+    if(hostPlayers.length>=4){ conn.send({type:'error',msg:'Room penuh'}); return; }
+    const pid=hostPlayers.length;
+    hostPlayers.push({id:pid,nama:data.name||('Pemain '+(pid+1)),peer:conn.peer});
+    conn.send({type:'welcome', playerId:pid});
+    updateWaitingList();
+  }
+  if(data.type==='action' && session){
+    const s=session.s;
+    const guestPlayer=hostPlayers.find(x=>x.peer===conn.peer);
+    if(!guestPlayer) return;
+    if(s.pendingCard && s.pendingCard.playerId===guestPlayer.id){
+      // Guest chose in prompt — resolve
+      const act=data.action;
+      if(act.type==='prompt'){
+        const {type,...rest}=act;
+        session.resolvePrompt(rest);
+      }
+      broadcastState();
+      return;
+    }
+    if(s.turn===guestPlayer.id && !s.pendingCard){
+      if(data.action.type==='roll'){
+        session.roll();
+        setTimeout(broadcastState, 100);
+      }
+    }
+  }
+}
+
+function broadcastState(){
+  if(!session) return;
+  const snap=JSON.parse(JSON.stringify(session.s));
+  const playersMeta=hostPlayers.map(p=>({id:p.id,nama:p.nama}));
+  Object.values(conns).forEach(c=>{
+    c.send({type:'state', state:snap, playersMeta});
+    // Send prompt only to relevant player
+    if(snap.pendingCard){
+      const targetPid=snap.pendingCard.playerId;
+      const targetMeta=hostPlayers.find(p=>p.id===targetPid);
+      if(targetMeta && targetMeta.peer===c.peer){
+        c.send({type:'prompt', prompt:snap.pendingCard});
+      }
+    }
+  });
+}
+
+function startOnlineGame(){
+  const names=hostPlayers.map(p=>p.nama==='Host'?'Guru':p.nama);
+  myPlayerId=0;
+  const st=newState(names);
+  pushLog(st,'Permainan dimulai. Tidak ada jawaban salah — hanya pilihan.');
+  session=new GameSession(st, ()=>{
+    renderGame();
+    broadcastState();
+  });
+  // Broadcast initial state
+  showScreen('screen-game');
+  renderGame();
+  broadcastState();
+}
+
+function doJoin(){
+  const code=$('join-code').value.trim().toUpperCase();
+  const name=$('join-name').value.trim();
+  if(code.length!==5){ toast('Kode harus 5 huruf'); return; }
+  if(!name){ toast('Isi namamu dulu'); return; }
+  $('join-status').textContent='Menyambung…';
+  roomCode=code; isHost=false;
+  peer=new Peer({debug:0});
+  peer.on('open', ()=>{
+    hostConn=peer.connect(peerIdFromCode(code), {reliable:true});
+    hostConn.on('open', ()=>{
+      hostConn.send({type:'join',name});
+      $('join-status').textContent='Terhubung. Menunggu guru memulai…';
+    });
+    hostConn.on('data', data=>{
+      if(data.type==='welcome'){
+        myPlayerId=data.playerId;
+        $('join-status').textContent=`Masuk sebagai pemain ${data.playerId+1}. Menunggu mulai…`;
+      }
+      if(data.type==='error'){
+        $('join-status').textContent='Gagal: '+data.msg;
+      }
+      if(data.type==='state'){
+        // Sync
+        if(!session){
+          session=new GameSession(data.state, ()=>{ renderGame(); });
+          showScreen('screen-game');
+        } else {
+          session.s=data.state;
+        }
+        renderGame();
+        // If it's my turn and there's a prompt, show it
+        if(data.state.pendingCard && data.state.pendingCard.playerId===myPlayerId){
+          showPrompt(data.state.pendingCard);
+        }
+      }
+      if(data.type==='prompt'){
+        if(data.prompt.playerId===myPlayerId){
+          showPrompt(data.prompt);
+        }
+      }
+    });
+    hostConn.on('close', ()=>{
+      toast('Koneksi terputus');
+    });
+  });
+  peer.on('error', err=>{
+    console.error(err);
+    $('join-status').textContent='Gagal konek: '+err.type+'. Coba lagi.';
+  });
+}
+
+function sendToHost(msg){
+  if(hostConn && hostConn.open) hostConn.send(msg);
+  else toast('Belum terhubung');
+}
+
+/* ============================================================
+   10. INIT
+   ============================================================ */
+// Deteksi: kalau URL ada ?room, langsung ke tab join
+if(new URLSearchParams(location.search).get('room')){
+  localMode=false;
+  showScreen('screen-online');
+  initOnlineTabs();
+}
+</script>
+</body>
+</html>
